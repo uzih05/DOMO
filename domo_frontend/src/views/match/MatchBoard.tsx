@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Search, Loader2, RefreshCw, Users, Rocket, List, User } from 'lucide-react';
+import { Plus, Search, Loader2, RefreshCw, Users, Rocket, List, User as UserIcon } from 'lucide-react';
 import type {
   Recruitment,
   RecruitmentFilter,
@@ -157,7 +157,7 @@ export const MatchBoard: React.FC<MatchBoardProps> = ({ currentUser }) => {
                 }
               `}
             >
-              <User className="w-4 h-4" />
+              <UserIcon className="w-4 h-4" />
               내 활동
             </button>
           )}
