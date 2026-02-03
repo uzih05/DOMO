@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.gitignore
+.DS_Store
+__MACOSX
+*.md
+.env*.local

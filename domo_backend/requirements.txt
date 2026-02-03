@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+psycopg2-binary
+asyncpg
+python-multipart
+requests
+openai
+weaviate-client>=4.0.0
+vectorwave
+bcrypt==3.2.0
+email-validator
+fastapi-mail
+passlib[bcrypt]

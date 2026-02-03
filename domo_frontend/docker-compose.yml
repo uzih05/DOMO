@@ -1,0 +1,11 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_API_URL: https://api.61.109.214.163.nip.io
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: https://api.61.109.214.163.nip.io
