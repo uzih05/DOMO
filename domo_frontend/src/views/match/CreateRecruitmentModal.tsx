@@ -60,7 +60,10 @@ export const CreateRecruitmentModal: React.FC<CreateRecruitmentModalProps> = ({
   ]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [deadline, setDeadline] = useState('');
+  const [deadline, setDeadline] = useState(() => {
+    // 오늘 날짜를 기본값으로 설정
+    return new Date().toISOString().split('T')[0];
+  });
   const [contactInfo, setContactInfo] = useState('');
   const [referenceUrl, setReferenceUrl] = useState('');
 

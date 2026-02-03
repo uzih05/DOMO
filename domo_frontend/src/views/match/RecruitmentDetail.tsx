@@ -15,7 +15,10 @@ import {
   XCircle,
   Loader2,
   Rocket,
+  Edit3,
+  Lock,
 } from 'lucide-react';
+import { EditRecruitmentModal } from './EditRecruitmentModal';
 import type {
   Recruitment,
   Application,
@@ -34,6 +37,7 @@ import {
   getApplications,
   createApplication,
   updateApplicationStatus,
+  updateRecruitmentStatus,
   createWorkspaceFromRecruitment,
 } from '@/src/models/api';
 
@@ -54,6 +58,8 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [showApplyForm, setShowApplyForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [closingRecruitment, setClosingRecruitment] = useState(false);
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
 
   // Apply form state
@@ -136,6 +142,29 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
     }
   };
 
+  // 모집 마감 + 자동 워크스페이스 생성
+  const handleCloseRecruitment = async () => {
+    if (!confirm('모집을 마감하시겠습니까?\n마감 후 수락된 지원자들과 함께 워크스페이스가 자동 생성됩니다.')) {
+      return;
+    }
+
+    setClosingRecruitment(true);
+    try {
+      // 1. 모집 상태를 closed로 변경
+      await updateRecruitmentStatus(recruitment.id, 'closed');
+
+      // 2. 자동으로 워크스페이스 생성
+      const result = await createWorkspaceFromRecruitment(recruitment.id);
+      alert(`모집이 마감되었습니다!\n워크스페이스가 생성되었습니다.\n초대 링크: ${result.invite_link}`);
+      onRefresh();
+    } catch (error) {
+      console.error('Failed to close recruitment:', error);
+      alert('모집 마감에 실패했습니다.');
+    } finally {
+      setClosingRecruitment(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -196,6 +225,34 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
 
           {/* Actions */}
           <div className="flex gap-2">
+            {/* 작성자: 수정 버튼 (모집 중일 때만) */}
+            {isOwner && recruitment.status !== 'closed' && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="px-4 py-2 rounded-xl border border-[var(--glass-border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2 text-sm"
+              >
+                <Edit3 className="w-4 h-4" />
+                수정
+              </button>
+            )}
+
+            {/* 작성자: 모집 마감 버튼 (모집 중일 때만) */}
+            {isOwner && recruitment.status !== 'closed' && (
+              <button
+                onClick={handleCloseRecruitment}
+                disabled={closingRecruitment}
+                className="px-4 py-2 rounded-xl bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+              >
+                {closingRecruitment ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+                모집 마감
+              </button>
+            )}
+
+            {/* 작성자: 워크스페이스 생성 버튼 (마감 후 워크스페이스 없을 때) */}
             {isOwner && recruitment.status === 'closed' && !recruitment.workspace_id && (
               <button
                 onClick={handleCreateWorkspace}
@@ -210,6 +267,8 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
                 워크스페이스 생성
               </button>
             )}
+
+            {/* 지원자: 지원하기 버튼 */}
             {!isOwner && !hasApplied && recruitment.status !== 'closed' && !allSlotsFilled && (
               <button
                 onClick={() => setShowApplyForm(true)}
@@ -219,6 +278,8 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
                 지원하기
               </button>
             )}
+
+            {/* 지원자: 지원 완료 표시 */}
             {hasApplied && (
               <span className="px-4 py-2 rounded-xl bg-[var(--accent)]/20 text-[var(--accent)] text-sm">
                 지원 완료
@@ -484,6 +545,18 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <EditRecruitmentModal
+          recruitment={recruitment}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={() => {
+            setShowEditModal(false);
+            onRefresh();
+          }}
+        />
       )}
     </div>
   );
