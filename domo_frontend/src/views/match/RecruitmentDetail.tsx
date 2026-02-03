@@ -67,7 +67,7 @@ export const RecruitmentDetail: React.FC<RecruitmentDetailProps> = ({
   const [introduction, setIntroduction] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
 
-  const isOwner = currentUser?.id === recruitment.user_id;
+  const isOwner = currentUser?.id !== undefined && Number(currentUser.id) === Number(recruitment.user_id);
   const hasApplied = applications.some(app => app.user_id === currentUser?.id);
   const allSlotsFilled = recruitment.position_slots.every(slot => slot.filled >= slot.total);
 
